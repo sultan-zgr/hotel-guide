@@ -9,31 +9,44 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 
 // Database Context
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // RabbitMQ Connection
 builder.Services.AddSingleton<IConnection>(sp =>
 {
+    var rabbitMqConnection = builder.Configuration["RabbitMQ:Connection"];
+    if (string.IsNullOrEmpty(rabbitMqConnection))
+    {
+        throw new ArgumentNullException("RabbitMQ:Connection", "RabbitMQ connection string is not configured properly.");
+    }
+
     var factory = new ConnectionFactory
     {
-        Uri = new Uri(builder.Configuration.GetConnectionString("RabbitMQConnection")),
-        DispatchConsumersAsync = true
+        Uri = new Uri(rabbitMqConnection),
+        DispatchConsumersAsync = true // Asynchronous consumers
     };
+
     return factory.CreateConnection();
 });
 
-// AutoMapper
+// Hosted Worker Service
+builder.Services.AddHostedService<Worker>();
+
+// AutoMapper Configuration
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 // Dependency Injection for Services
 builder.Services.AddScoped<ReportManagementService>();
-builder.Services.AddScoped<ReportProcessingService>();
+
 builder.Services.AddSingleton<HotelEventListener>();
 
+builder.Services.AddHostedService<Worker>();
+
+
+// Add Swagger and Controllers
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -45,14 +58,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Start Listening to RabbitMQ
+// Start HotelEventListener (RabbitMQ Listener for Hotel Events)
 using (var scope = app.Services.CreateScope())
 {
-    var processingService = scope.ServiceProvider.GetRequiredService<ReportProcessingService>();
     var hotelEventListener = scope.ServiceProvider.GetRequiredService<HotelEventListener>();
-
-    // Start Listening for Messages
-    processingService.StartListening();
     hotelEventListener.StartListening();
 }
 

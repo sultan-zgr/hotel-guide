@@ -2,8 +2,7 @@
 {
     public class ContactDTO
     {
-        public Guid Id { get; set; }
-        public string Type { get; set; } // Phone, Email, etc.
-        public string Value { get; set; }
+        public string Type { get; set; } // İletişim tipi (Phone, Email, vs.)
+        public string Value { get; set; } // İletişim bilgisi (örneğin telefon numarası)
     }
 }
