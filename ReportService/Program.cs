@@ -6,50 +6,56 @@ using ReportService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Veritabaný Baðlantýsý
+// Add services to the container
+
+// Database Context
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. RabbitMQ Baðlantýsý
+// RabbitMQ Connection
 builder.Services.AddSingleton<IConnection>(sp =>
 {
     var factory = new ConnectionFactory
     {
         Uri = new Uri(builder.Configuration.GetConnectionString("RabbitMQConnection")),
-        DispatchConsumersAsync = true // Asenkron tüketiciler için gerekli
+        DispatchConsumersAsync = true
     };
     return factory.CreateConnection();
 });
 
-// 3. AutoMapper
+// AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
-// 4. Servisler
+// Dependency Injection for Services
 builder.Services.AddScoped<ReportManagementService>();
 builder.Services.AddScoped<ReportProcessingService>();
+builder.Services.AddSingleton<HotelEventListener>();
 
-// 5. Controller ve Swagger
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 6. Middleware ve Swagger Ayarlarý
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-app.MapControllers();
-
-// RabbitMQ kuyruðunu dinlemeye baþla
+// Start Listening to RabbitMQ
 using (var scope = app.Services.CreateScope())
 {
-    var reportProcessingService = scope.ServiceProvider.GetRequiredService<ReportProcessingService>();
-    reportProcessingService.StartListening(); // Kuyruðu dinlemeye baþlar
+    var processingService = scope.ServiceProvider.GetRequiredService<ReportProcessingService>();
+    var hotelEventListener = scope.ServiceProvider.GetRequiredService<HotelEventListener>();
+
+    // Start Listening for Messages
+    processingService.StartListening();
+    hotelEventListener.StartListening();
 }
 
+app.UseHttpsRedirection();
+app.MapControllers();
 app.Run();

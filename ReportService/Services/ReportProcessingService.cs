@@ -68,7 +68,7 @@ namespace ReportService.Services
         private int GetHotelCount(string location)
         {
             // Veritabanında belirtilen konumdaki otelleri say
-            return _context.Hotel.Count(h => h.Location == location);
+            return _context.Hotels.Count(h => h.Location == location);
         }
     }
 }
