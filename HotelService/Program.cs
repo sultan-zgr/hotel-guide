@@ -2,6 +2,7 @@ using HotelService.Data;
 using HotelService.Mappings;
 using HotelService.Services;
 using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
 using shared.Messaging;
 using Shared.Messaging;
 
@@ -26,11 +27,29 @@ builder.Services.AddScoped<ContactService>();
 builder.Services.AddScoped<ReportManagementService>();
 
 // RabbitMQ Configuration
-builder.Services.AddSingleton<IMessageQueue>(sp =>
+// RabbitMQ Connection
+builder.Services.AddSingleton<IConnection>(sp =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("RabbitMQConnection");
-    return new RabbitMQPublisher(connectionString);
+    try
+    {
+        var factory = new ConnectionFactory
+        {
+            Uri = new Uri(builder.Configuration.GetConnectionString("RabbitMQConnection")),
+            DispatchConsumersAsync = true
+        };
+        return factory.CreateConnection();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"RabbitMQ connection error: {ex.Message}");
+        throw;
+    }
 });
+
+
+// RabbitMQ Publisher
+builder.Services.AddSingleton<IMessageQueue, RabbitMQPublisher>();
+
 
 // Controllers (Enable Controller Support)
 builder.Services.AddControllers();

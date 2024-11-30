@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using ReportService.Models;
 
 namespace ReportService.Data
@@ -8,6 +9,7 @@ namespace ReportService.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Hotel> Hotels { get; set; }
     }
 
 }
