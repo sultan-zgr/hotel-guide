@@ -14,7 +14,11 @@ namespace ReportService.Mappings
             CreateMap<CreateReportRequestDTO, Report>();
             CreateMap<Report, ReportListDTO>();
 
-            // Rapor -> ReportRequestEvent
+            CreateMap<HotelUpdatedEvent, Hotel>().ReverseMap();
+            CreateMap<HotelDeletedEvent, Hotel>().ReverseMap();
+
+
+            //Rapor->ReportRequestEvent
             CreateMap<Report, ReportRequestEvent>()
                 .ForMember(dest => dest.ReportId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
