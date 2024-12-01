@@ -1,4 +1,4 @@
-﻿namespace HotelService.DTOs
+﻿namespace HotelService.DTOs.HotelDTOs
 {
     public class UpdateHotelDTO
     {

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using HotelService.Data;
-using HotelService.DTOs;
+using HotelService.DTOs.HotelDTOs;
 using HotelService.Models;
 using Microsoft.EntityFrameworkCore;
 using shared.Messaging.RabbitMQ;

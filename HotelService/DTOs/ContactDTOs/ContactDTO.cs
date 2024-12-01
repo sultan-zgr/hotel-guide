@@ -1,4 +1,4 @@
-﻿namespace HotelService.DTOs
+﻿namespace HotelService.DTOs.ContactDTOs
 {
     public class ContactDTO
     {

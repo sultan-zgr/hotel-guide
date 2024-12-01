@@ -1,4 +1,4 @@
-﻿using HotelService.DTOs;
+﻿using HotelService.DTOs.ContactDTOs;
 using HotelService.Services;
 using Microsoft.AspNetCore.Mvc;
 
