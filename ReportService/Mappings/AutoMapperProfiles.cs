@@ -8,11 +8,11 @@ namespace ReportService.Mappings
     {
         public AutoMapperProfiles()
         {
-            // Model -> DTO
+            // Rapor -> DTO
             CreateMap<Report, ReportDTO>().ReverseMap();
-
-            // DTO -> Model
             CreateMap<CreateReportRequestDTO, Report>();
+            CreateMap<Report, ReportListDTO>();
         }
     }
+
 }
