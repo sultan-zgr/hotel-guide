@@ -1,4 +1,6 @@
-﻿namespace shared.Messaging.RabbitMQ
+﻿using shared.Messaging.Events;
+
+namespace shared.Messaging.RabbitMQ
 {
     public interface IRabbitMQPublisher
     {
@@ -6,5 +8,6 @@
         void PublishHotelAddedEvent(HotelAddedEvent hotelEvent);
         void PublishHotelUpdatedEvent(HotelUpdatedEvent hotelEvent);
         void PublishHotelDeletedEvent(HotelDeletedEvent hotelEvent);
+       // void PublishReportRequest(ReportRequestEvent reportEvent);
     }
 }

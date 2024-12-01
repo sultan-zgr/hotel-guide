@@ -33,6 +33,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
 
 // Add RabbitMQSubscriber
 builder.Services.AddSingleton<IRabbitMQSubscriber, RabbitMQSubscriber>();
+//builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
 
 // Hosted Worker Service
 builder.Services.AddHostedService<Worker>();

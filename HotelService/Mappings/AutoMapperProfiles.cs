@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using HotelService.Models;
-using HotelService.DTOs;
+using HotelService.DTOs.HotelDTOs;
+using HotelService.DTOs.ContactDTOs;
 
 namespace HotelService.Mappings
 {

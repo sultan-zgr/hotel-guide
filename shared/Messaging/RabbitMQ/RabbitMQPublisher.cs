@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
+using shared.Messaging.Events;
 using System.Text;
 
 namespace shared.Messaging.RabbitMQ
@@ -36,5 +37,10 @@ namespace shared.Messaging.RabbitMQ
         {
             Publish("hotel-events", hotelEvent);
         }
+        //public void PublishReportRequest(ReportRequestEvent reportEvent)
+        //{
+        //    Publish("report-queue", reportEvent);
+        //}
+
     }
 }

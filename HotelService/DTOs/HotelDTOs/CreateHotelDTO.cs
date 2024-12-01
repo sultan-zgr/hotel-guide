@@ -1,4 +1,6 @@
-﻿namespace HotelService.DTOs
+﻿using HotelService.DTOs.ContactDTOs;
+
+namespace HotelService.DTOs.HotelDTOs
 {
     public class CreateHotelDTO
     {
