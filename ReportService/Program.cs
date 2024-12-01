@@ -30,12 +30,13 @@ builder.Services.AddSingleton<IConnection>(sp =>
 
     return factory.CreateConnection();
 });
-
+builder.Services.AddHostedService<Worker>();
 // Add RabbitMQSubscriber
 builder.Services.AddSingleton<IRabbitMQSubscriber, RabbitMQSubscriber>();
+builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
 
 // Hosted Worker Service
-builder.Services.AddHostedService<Worker>();
+
 
 // AutoMapper Configuration
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
