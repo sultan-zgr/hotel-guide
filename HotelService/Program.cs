@@ -3,8 +3,7 @@ using HotelService.Mappings;
 using HotelService.Services;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
-using shared.Messaging;
-using Shared.Messaging;
+using shared.Messaging.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +23,7 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 // Dependency Injection for Services
 builder.Services.AddScoped<HotelManagementService>();
 builder.Services.AddScoped<ContactService>();
-builder.Services.AddScoped<ReportManagementService>();
+//builder.Services.AddScoped<ReportManagementService>();
 
 // RabbitMQ Configuration
 // RabbitMQ Connection
@@ -48,7 +47,8 @@ builder.Services.AddSingleton<IConnection>(sp =>
 
 
 // RabbitMQ Publisher
-builder.Services.AddSingleton<IMessageQueue, RabbitMQPublisher>();
+builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
+//builder.Services.AddSingleton<IRabbitMQSubscriber, RabbitMQSubscriber>();
 
 
 // Controllers (Enable Controller Support)

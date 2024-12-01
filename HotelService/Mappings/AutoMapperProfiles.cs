@@ -18,8 +18,8 @@ namespace HotelService.Mappings
             CreateMap<Contact, CreateContactDTO>().ReverseMap();
 
             // ReportRequest ↔ DTO
-            CreateMap<ReportRequest, ReportRequestDTO>().ReverseMap();
-            CreateMap<ReportRequest, CreateReportRequestDTO>().ReverseMap();
+            //CreateMap<ReportRequest, ReportRequestDTO>().ReverseMap();
+            //CreateMap<ReportRequest, CreateReportRequestDTO>().ReverseMap();
         }
     }
 }
