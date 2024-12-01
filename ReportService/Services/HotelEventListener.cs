@@ -1,78 +1,57 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RabbitMQ.Client.Events;
-using RabbitMQ.Client;
+﻿using AutoMapper;
 using ReportService.Data;
-using Newtonsoft.Json;
 using ReportService.Models;
-using System.Text;
+using shared.Messaging.RabbitMQ;
 
 namespace ReportService.Services
 {
     public class HotelEventListener
     {
-        private readonly IConnection _connection;
-        private readonly IConfiguration _configuration;
+        private readonly IRabbitMQSubscriber _subscriber;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IMapper _mapper;
 
-        public HotelEventListener(IConnection connection, IConfiguration configuration, IServiceScopeFactory scopeFactory)
+        public HotelEventListener(IRabbitMQSubscriber subscriber, IServiceScopeFactory scopeFactory, IMapper mapper)
         {
-            _connection = connection;
-            _configuration = configuration;
+            _subscriber = subscriber;
             _scopeFactory = scopeFactory;
+            _mapper = mapper;
         }
 
         public void StartListening()
         {
-            var queueName = _configuration["RabbitMQ:HotelQueue"];
-            var channel = _connection.CreateModel();
-            channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false);
-
-            var consumer = new AsyncEventingBasicConsumer(channel);
-            consumer.Received += async (model, eventArgs) =>
+            _subscriber.Subscribe<HotelUpdatedEvent>("hotel-events", async hotelEvent =>
             {
-                using (var scope = _scopeFactory.CreateScope())
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var existingHotel = await dbContext.Hotels.FindAsync(hotelEvent.Id);
+                if (existingHotel == null)
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                    try
-                    {
-                        var body = eventArgs.Body.ToArray();
-                        var message = Encoding.UTF8.GetString(body);
-                        var hotelEvent = JsonConvert.DeserializeObject<HotelUpdatedEvent>(message);
-
-                        if (hotelEvent != null)
-                        {
-                            var existingHotel = await dbContext.Hotels.FindAsync(hotelEvent.Id);
-                            if (existingHotel == null)
-                            {
-                                var newHotel = new Hotel
-                                {
-                                    Id = hotelEvent.Id,
-                                    Name = hotelEvent.Name,
-                                    Location = hotelEvent.Location
-                                };
-                                dbContext.Hotels.Add(newHotel);
-                            }
-                            else
-                            {
-                                existingHotel.Name = hotelEvent.Name;
-                                existingHotel.Location = hotelEvent.Location;
-                                dbContext.Hotels.Update(existingHotel);
-                            }
-
-                            await dbContext.SaveChangesAsync();
-                        }
-
-                        channel.BasicAck(eventArgs.DeliveryTag, false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error processing hotel event: {ex.Message}");
-                        channel.BasicNack(eventArgs.DeliveryTag, false, requeue: true);
-                    }
+                    var newHotel = _mapper.Map<Hotel>(hotelEvent);
+                    dbContext.Hotels.Add(newHotel);
                 }
-            };
+                else
+                {
+                    _mapper.Map(hotelEvent, existingHotel);
+                    dbContext.Hotels.Update(existingHotel);
+                }
 
-            channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
+                await dbContext.SaveChangesAsync();
+            });
+
+            _subscriber.Subscribe<HotelDeletedEvent>("hotel-events", async hotelDeletedEvent =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var existingHotel = await dbContext.Hotels.FindAsync(hotelDeletedEvent.Id);
+                if (existingHotel != null)
+                {
+                    dbContext.Hotels.Remove(existingHotel);
+                    await dbContext.SaveChangesAsync();
+                }
+            });
         }
     }
 }

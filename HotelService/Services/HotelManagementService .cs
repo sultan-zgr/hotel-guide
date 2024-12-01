@@ -3,9 +3,7 @@ using HotelService.Data;
 using HotelService.DTOs;
 using HotelService.Models;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
-using System.Text;
+using shared.Messaging.RabbitMQ;
 
 namespace HotelService.Services
 {
@@ -13,13 +11,13 @@ namespace HotelService.Services
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
-        private readonly IConnection _rabbitConnection;
+        private readonly IRabbitMQPublisher _publisher;
 
-        public HotelManagementService(AppDbContext context, IMapper mapper, IConnection rabbitConnection)
+        public HotelManagementService(AppDbContext context, IMapper mapper, IRabbitMQPublisher publisher)
         {
             _context = context;
             _mapper = mapper;
-            _rabbitConnection = rabbitConnection;
+            _publisher = publisher;
         }
 
         // 1. Tüm Otelleri Listeleme
@@ -36,7 +34,12 @@ namespace HotelService.Services
             _context.Hotels.Add(hotel);
             await _context.SaveChangesAsync();
 
-            PublishHotelAddedEvent(hotel);
+            _publisher.PublishHotelAddedEvent(new HotelAddedEvent
+            {
+                Id = hotel.Id,
+                Name = hotel.Name,
+                Location = hotel.Location
+            });
         }
 
         // 3. Otel Güncelleme
@@ -49,7 +52,12 @@ namespace HotelService.Services
             _mapper.Map(hotelDTO, hotel);
             await _context.SaveChangesAsync();
 
-            PublishHotelUpdatedEvent(hotel);
+            _publisher.PublishHotelUpdatedEvent(new HotelUpdatedEvent
+            {
+                Id = hotel.Id,
+                Name = hotel.Name,
+                Location = hotel.Location
+            });
         }
 
         // 4. Otel Silme
@@ -62,48 +70,10 @@ namespace HotelService.Services
             _context.Hotels.Remove(hotel);
             await _context.SaveChangesAsync();
 
-            PublishHotelDeletedEvent(id);
-        }
-
-        // RabbitMQ Eventleri Yayınlama Metotları
-        private void PublishHotelAddedEvent(Hotel hotel)
-        {
-            PublishEvent("hotel-events", new HotelAddedEvent
-            {
-                Id = hotel.Id,
-                Name = hotel.Name,
-                Location = hotel.Location
-            });
-        }
-
-        private void PublishHotelUpdatedEvent(Hotel hotel)
-        {
-            PublishEvent("hotel-events", new HotelUpdatedEvent
-            {
-                Id = hotel.Id,
-                Name = hotel.Name,
-                Location = hotel.Location
-            });
-        }
-
-        private void PublishHotelDeletedEvent(Guid id)
-        {
-            PublishEvent("hotel-events", new HotelDeletedEvent
+            _publisher.PublishHotelDeletedEvent(new HotelDeletedEvent
             {
                 Id = id
             });
-        }
-
-        private void PublishEvent<T>(string queueName, T eventMessage)
-        {
-            using var channel = _rabbitConnection.CreateModel();
-            channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false);
-
-            var message = JsonConvert.SerializeObject(eventMessage);
-            var body = Encoding.UTF8.GetBytes(message);
-
-            channel.BasicPublish(exchange: "", routingKey: queueName, basicProperties: null, body: body);
-            Console.WriteLine($"{typeof(T).Name} published: {message}");
         }
     }
 }

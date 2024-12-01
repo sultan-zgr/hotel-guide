@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using ReportService.Data;
 using ReportService.Mappings;
 using ReportService.Services;
+using shared.Messaging.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,9 @@ builder.Services.AddSingleton<IConnection>(sp =>
     return factory.CreateConnection();
 });
 
+// Add RabbitMQSubscriber
+builder.Services.AddSingleton<IRabbitMQSubscriber, RabbitMQSubscriber>();
+
 // Hosted Worker Service
 builder.Services.AddHostedService<Worker>();
 
@@ -38,11 +42,7 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 // Dependency Injection for Services
 builder.Services.AddScoped<ReportManagementService>();
-
 builder.Services.AddSingleton<HotelEventListener>();
-
-builder.Services.AddHostedService<Worker>();
-
 
 // Add Swagger and Controllers
 builder.Services.AddEndpointsApiExplorer();
