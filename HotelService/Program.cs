@@ -1,6 +1,8 @@
+using FluentValidation.AspNetCore;
 using HotelService.Data;
 using HotelService.Mappings;
 using HotelService.Services;
+using HotelService.Validations;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using shared.Messaging.RabbitMQ;
@@ -17,16 +19,22 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// FluentValidation Integration
+builder.Services.AddControllers()
+    .AddFluentValidation(fv =>
+    {
+        fv.RegisterValidatorsFromAssemblyContaining<CreateContactDTOValidator>(); // Contact Validasyonlarý
+        fv.RegisterValidatorsFromAssemblyContaining<CreateHotelDTOValidator>();   // Hotel Validasyonlarý
+    });
+
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 // Dependency Injection for Services
 builder.Services.AddScoped<HotelManagementService>();
 builder.Services.AddScoped<ContactService>();
-//builder.Services.AddScoped<ReportManagementService>();
 
 // RabbitMQ Configuration
-// RabbitMQ Connection
 builder.Services.AddSingleton<IConnection>(sp =>
 {
     try
@@ -45,11 +53,8 @@ builder.Services.AddSingleton<IConnection>(sp =>
     }
 });
 
-
 // RabbitMQ Publisher
 builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
-//builder.Services.AddSingleton<IRabbitMQSubscriber, RabbitMQSubscriber>();
-
 
 // Controllers (Enable Controller Support)
 builder.Services.AddControllers();

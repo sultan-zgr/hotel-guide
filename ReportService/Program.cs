@@ -1,8 +1,10 @@
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using ReportService.Data;
 using ReportService.Mappings;
 using ReportService.Services;
+using ReportService.Validations;
 using shared.Messaging.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,13 +35,22 @@ builder.Services.AddSingleton<IConnection>(sp =>
 
 // Add RabbitMQSubscriber
 builder.Services.AddSingleton<IRabbitMQSubscriber, RabbitMQSubscriber>();
-//builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
+
+// Add RabbitMQPublisher
+builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
 
 // Hosted Worker Service
 builder.Services.AddHostedService<Worker>();
 
 // AutoMapper Configuration
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
+
+// FluentValidation Configuration
+builder.Services.AddControllers()
+    .AddFluentValidation(fv =>
+    {
+        fv.RegisterValidatorsFromAssemblyContaining<CreateReportRequestDTOValidator>();
+    });
 
 // Dependency Injection for Services
 builder.Services.AddScoped<ReportManagementService>();
