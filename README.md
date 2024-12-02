@@ -61,8 +61,10 @@ Bu proje, her bir işlevselliğin bağımsız bir servis tarafından yönetildi�
 - **Otel Yönetimi:**
   - CRUD işlemleri (Ekle, Güncelle, Listele, Sil).
   - İletişim bilgileri yönetimi.
+  - **Serilog ile Loglama**: Tüm otel işlemleri loglanır.
 - **Rapor Yönetimi:**
   - Otel raporlarının hazırlanması ve kuyruk mekanizmasıyla asenkron işlenmesi.
+  - **Serilog ile Loglama**: Rapor talepleri ve durum güncellemeleri loglanır.
 - **RabbitMQ Entegrasyonu:** Mikroservisler arasında mesajlaşma.
 - **PostgreSQL:** Veri depolama.
 - **FluentValidation:** DTO seviyesinde validasyon.
@@ -81,6 +83,7 @@ Bu proje, her bir işlevselliğin bağımsız bir servis tarafından yönetildi�
 - **Ocelot (API Gateway)**
 - **FluentValidation**
 - **AutoMapper**
+- **Serilog**
 - **Docker**
 - **xUnit**
 
