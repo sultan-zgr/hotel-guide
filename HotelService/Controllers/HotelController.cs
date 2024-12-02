@@ -44,7 +44,7 @@ namespace HotelService.Controllers
         public async Task<IActionResult> DeleteHotel(Guid id)
         {
             await _hotelService.DeleteHotel(id);
-            return NoContent(); // Success but no response body
+            return NoContent(); // Success but no response bodyy
         }
     }
 }
