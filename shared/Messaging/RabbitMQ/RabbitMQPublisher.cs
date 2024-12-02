@@ -37,6 +37,7 @@ namespace shared.Messaging.RabbitMQ
         {
             Publish("hotel-events", hotelEvent);
         }
+
         //public void PublishReportRequest(ReportRequestEvent reportEvent)
         //{
         //    Publish("report-queue", reportEvent);

@@ -19,17 +19,14 @@ public class ReportServiceTests
     private readonly Mock<IConnection> _mockConnection;
     public ReportServiceTests()
     {
-        // InMemoryDatabase ayarları
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("ReportTestDb")
             .Options;
         _context = new AppDbContext(options);
 
-        // Mock bağımlılıklar
         _mockMapper = new Mock<IMapper>();
         _mockConnection = new Mock<IConnection>();
 
-        // Servis
         _service = new ReportManagementService(_context, _mockConnection.Object, _mockMapper.Object);
     }
 

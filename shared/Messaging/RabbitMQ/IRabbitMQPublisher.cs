@@ -8,6 +8,5 @@ namespace shared.Messaging.RabbitMQ
         void PublishHotelAddedEvent(HotelAddedEvent hotelEvent);
         void PublishHotelUpdatedEvent(HotelUpdatedEvent hotelEvent);
         void PublishHotelDeletedEvent(HotelDeletedEvent hotelEvent);
-       // void PublishReportRequest(ReportRequestEvent reportEvent);
     }
 }
