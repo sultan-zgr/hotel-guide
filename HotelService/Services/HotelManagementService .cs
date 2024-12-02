@@ -4,6 +4,7 @@ using HotelService.DTOs.HotelDTOs;
 using HotelService.Models;
 using Microsoft.EntityFrameworkCore;
 using shared.Messaging.RabbitMQ;
+using AutoMapper.QueryableExtensions;
 
 namespace HotelService.Services
 {
@@ -23,8 +24,10 @@ namespace HotelService.Services
         // 1. Tüm Otelleri Listeleme
         public async Task<List<HotelDTO>> GetAllHotels()
         {
-            var hotels = await _context.Hotels.Include(h => h.Contacts).ToListAsync();
-            return _mapper.Map<List<HotelDTO>>(hotels);
+            return await _context.Hotels
+                .Include(h => h.Contacts)
+                .ProjectTo<HotelDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
         // 2. Yeni Otel Ekleme
@@ -34,12 +37,8 @@ namespace HotelService.Services
             _context.Hotels.Add(hotel);
             await _context.SaveChangesAsync();
 
-            _publisher.PublishHotelAddedEvent(new HotelAddedEvent
-            {
-                Id = hotel.Id,
-                Name = hotel.Name,
-                Location = hotel.Location
-            });
+            var hotelAddedEvent = _mapper.Map<HotelAddedEvent>(hotel);
+            _publisher.PublishHotelAddedEvent(hotelAddedEvent);
         }
 
         // 3. Otel Güncelleme
@@ -52,12 +51,8 @@ namespace HotelService.Services
             _mapper.Map(hotelDTO, hotel);
             await _context.SaveChangesAsync();
 
-            _publisher.PublishHotelUpdatedEvent(new HotelUpdatedEvent
-            {
-                Id = hotel.Id,
-                Name = hotel.Name,
-                Location = hotel.Location
-            });
+            var hotelUpdatedEvent = _mapper.Map<HotelUpdatedEvent>(hotel);
+            _publisher.PublishHotelUpdatedEvent(hotelUpdatedEvent);
         }
 
         // 4. Otel Silme
@@ -85,12 +80,8 @@ namespace HotelService.Services
 
             foreach (var hotel in hotels)
             {
-                _publisher.PublishHotelAddedEvent(new HotelAddedEvent
-                {
-                    Id = hotel.Id,
-                    Name = hotel.Name,
-                    Location = hotel.Location
-                });
+                var hotelAddedEvent = _mapper.Map<HotelAddedEvent>(hotel);
+                _publisher.PublishHotelAddedEvent(hotelAddedEvent);
             }
         }
     }

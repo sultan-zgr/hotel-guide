@@ -10,17 +10,19 @@ namespace HotelService.Mappings
         public AutoMapperProfiles()
         {
             // Hotel ↔ DTO
-            CreateMap<Hotel, HotelDTO>().ReverseMap();
-            CreateMap<Hotel, CreateHotelDTO>().ReverseMap();
-            CreateMap<Hotel, UpdateHotelDTO>().ReverseMap();
+            CreateMap<Hotel, HotelDTO>()
+                .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => src.Contacts));
+
+            CreateMap<CreateHotelDTO, Hotel>();
+            CreateMap<UpdateHotelDTO, Hotel>();
 
             // Contact ↔ DTO
-            CreateMap<Contact, ContactDTO>().ReverseMap();
-            CreateMap<Contact, CreateContactDTO>().ReverseMap();
+            CreateMap<Contact, ContactDTO>();
+            CreateMap<CreateContactDTO, Contact>();
 
-            // ReportRequest ↔ DTO
-            //CreateMap<ReportRequest, ReportRequestDTO>().ReverseMap();
-            //CreateMap<ReportRequest, CreateReportRequestDTO>().ReverseMap();
+            // Event Mapping
+            CreateMap<Hotel, HotelAddedEvent>();
+            CreateMap<Hotel, HotelUpdatedEvent>();
         }
     }
 }
