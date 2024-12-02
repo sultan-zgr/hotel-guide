@@ -6,9 +6,18 @@ using HotelService.Services;
 using HotelService.Validations;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
+using Serilog;
 using shared.Messaging.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog Configuration
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console() // Console loglama
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day) // Günlük dosya loglama
+    .CreateLogger();
+
+builder.Host.UseSerilog(); // Serilog'u entegre et
 
 // Add services to the container
 ConfigureServices(builder.Services, builder.Configuration);
@@ -60,7 +69,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"RabbitMQ connection error: {ex.Message}");
+            Log.Error(ex, "RabbitMQ connection error");
             throw;
         }
     });
@@ -84,6 +93,14 @@ void ConfigureMiddleware(WebApplication app)
 
     // Routing Middleware
     app.UseRouting();
+
+    // Log All Requests/Responses (Middleware Example)
+    app.Use(async (context, next) =>
+    {
+        Log.Information("Handling request: {Method} {Path}", context.Request.Method, context.Request.Path);
+        await next();
+        Log.Information("Finished handling request. Status Code: {StatusCode}", context.Response.StatusCode);
+    });
 
     // Controller Endpoint Mapping
     app.MapControllers();

@@ -5,9 +5,18 @@ using ReportService.Data;
 using ReportService.Mappings;
 using ReportService.Services;
 using ReportService.Validations;
+using Serilog;
 using shared.Messaging.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog Configuration
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console() // Konsol loglama
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day) // Günlük dosya loglama
+    .CreateLogger();
+
+builder.Host.UseSerilog(); // Serilog'u entegre et
 
 // Add services to the container
 
@@ -21,6 +30,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
     var rabbitMqConnection = builder.Configuration["RabbitMQ:Connection"];
     if (string.IsNullOrEmpty(rabbitMqConnection))
     {
+        Log.Error("RabbitMQ connection string is not configured properly.");
         throw new ArgumentNullException("RabbitMQ:Connection", "RabbitMQ connection string is not configured properly.");
     }
 
@@ -30,7 +40,17 @@ builder.Services.AddSingleton<IConnection>(sp =>
         DispatchConsumersAsync = true // Asynchronous consumers
     };
 
-    return factory.CreateConnection();
+    try
+    {
+        var connection = factory.CreateConnection();
+        Log.Information("Successfully connected to RabbitMQ at {RabbitMQConnection}", rabbitMqConnection);
+        return connection;
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Failed to connect to RabbitMQ at {RabbitMQConnection}", rabbitMqConnection);
+        throw new InvalidOperationException("RabbitMQ connection failed. Check RabbitMQ server and configuration.", ex);
+    }
 });
 
 // Add RabbitMQSubscriber
@@ -74,9 +94,28 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var hotelEventListener = scope.ServiceProvider.GetRequiredService<HotelEventListener>();
-    hotelEventListener.StartListening();
+    try
+    {
+        hotelEventListener.StartListening();
+        Log.Information("HotelEventListener started successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "HotelEventListener failed to start.");
+        throw;
+    }
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
+
+// Middleware for Logging Requests and Responses
+app.Use(async (context, next) =>
+{
+    Log.Information("Handling request: {Method} {Path}", context.Request.Method, context.Request.Path);
+    await next();
+    Log.Information("Finished handling request. Status Code: {StatusCode}", context.Response.StatusCode);
+});
+
 app.MapControllers();
 app.Run();
