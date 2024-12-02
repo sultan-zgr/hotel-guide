@@ -25,6 +25,18 @@ Bu proje, her bir işlevselliğin bağımsız bir servis tarafından yönetildi�
   - **ReportService:** HotelService tarafından yayınlanan otel olaylarını dinleyerek kendi veritabanını senkronize eder.
 - Bu yapı, servislerin birbirinden bağımsız çalışmasını ve asenkron bir iletişim sağlanmasını mümkün kılar.
 
+### **Arka Planda Çalışan Servis (Background Worker)**
+
+**Rapor Durumunu Güncelleyen Arka Plan Servisi**
+- **Worker:** ReportService için bir arka plan servisi olarak yapılandırılmıştır.
+- **Amaç:** Kullanıcının talep ettiği raporların arka planda hazırlanmasını ve tamamlandığında durumunun "Preparing" (Hazırlanıyor) olarak güncellenip "Completed" (Tamamlandı) durumuna geçirilmesini sağlar.
+- **Çalışma Yapısı:**
+  1. **RabbitMQ Dinleme:** Worker, `report-queue` kuyruğunu dinler.
+  2. **Durum Güncelleme:** Talep edilen raporlar kuyruktan alınır ve ilgili raporun durum bilgisi güncellenir.
+  3. **Database ile Senkronizasyon:** Durum değişikliği sonrası değişiklikler PostgreSQL veritabanına kaydedilir.
+  
+**Bu yapı sayesinde kullanıcı talepleri senkronize edilmeden işlenir, böylece sistem darboğazlara karşı korunur.**
+
 ---
 
 ## **Servisler**
