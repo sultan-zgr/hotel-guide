@@ -46,5 +46,20 @@ namespace HotelService.Controllers
             await _hotelService.DeleteHotel(id);
             return NoContent(); // Success but no response bodyy
         }
+        // 5. Toplu Otel Ekle
+        [HttpPost("bulk")]
+        public async Task<IActionResult> AddHotelsBulk([FromBody] List<CreateHotelDTO> hotelsDTO)
+        {
+            await _hotelService.AddHotelsBulk(hotelsDTO);
+            return StatusCode(201); // Created
+        }
+
+        // TODO: Elasticsearch Search Feature
+        // [HttpGet("search")]
+        // public async Task<IActionResult> SearchHotels([FromQuery] string query)
+        // {
+        //     var searchResults = await _hotelService.SearchHotels(query);
+        //     return Ok(searchResults);
+        // }
     }
 }
