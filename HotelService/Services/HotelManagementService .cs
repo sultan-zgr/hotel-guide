@@ -75,5 +75,23 @@ namespace HotelService.Services
                 Id = id
             });
         }
+
+        // 5. Toplu Otel Ekleme
+        public async Task AddHotelsBulk(List<CreateHotelDTO> hotelsDTO)
+        {
+            var hotels = _mapper.Map<List<Hotel>>(hotelsDTO);
+            _context.Hotels.AddRange(hotels);
+            await _context.SaveChangesAsync();
+
+            foreach (var hotel in hotels)
+            {
+                _publisher.PublishHotelAddedEvent(new HotelAddedEvent
+                {
+                    Id = hotel.Id,
+                    Name = hotel.Name,
+                    Location = hotel.Location
+                });
+            }
+        }
     }
 }
