@@ -1,6 +1,7 @@
 using FluentValidation.AspNetCore;
 using HotelService.Data;
 using HotelService.Mappings;
+using HotelService.Repositories;
 using HotelService.Services;
 using HotelService.Validations;
 using Microsoft.EntityFrameworkCore;
@@ -10,70 +11,80 @@ using shared.Messaging.RabbitMQ;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-
-// Swagger/OpenAPI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Database Context
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// FluentValidation Integration
-builder.Services.AddControllers()
-    .AddFluentValidation(fv =>
-    {
-        fv.RegisterValidatorsFromAssemblyContaining<CreateContactDTOValidator>(); // Contact Validasyonlarý
-        fv.RegisterValidatorsFromAssemblyContaining<CreateHotelDTOValidator>();   // Hotel Validasyonlarý
-    });
-
-// AutoMapper
-builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
-
-// Dependency Injection for Services
-builder.Services.AddScoped<HotelManagementService>();
-builder.Services.AddScoped<ContactService>();
-
-// RabbitMQ Configuration
-builder.Services.AddSingleton<IConnection>(sp =>
-{
-    try
-    {
-        var factory = new ConnectionFactory
-        {
-            Uri = new Uri(builder.Configuration.GetConnectionString("RabbitMQConnection")),
-            DispatchConsumersAsync = true
-        };
-        return factory.CreateConnection();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"RabbitMQ connection error: {ex.Message}");
-        throw;
-    }
-});
-
-// RabbitMQ Publisher
-builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
-
-// Controllers (Enable Controller Support)
-builder.Services.AddControllers();
+ConfigureServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-// Enable Routing
-app.UseRouting();
-
-// Map Controllers
-app.MapControllers();
+ConfigureMiddleware(app);
 
 app.Run();
+
+void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+{
+    // Swagger/OpenAPI
+    services.AddEndpointsApiExplorer();
+    services.AddSwaggerGen();
+
+    // Database Context
+    services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+    // FluentValidation Integration
+    services.AddControllers()
+        .AddFluentValidation(fv =>
+        {
+            fv.RegisterValidatorsFromAssemblyContaining<CreateContactDTOValidator>();
+            fv.RegisterValidatorsFromAssemblyContaining<CreateHotelDTOValidator>();
+        });
+
+    // AutoMapper
+    services.AddAutoMapper(typeof(AutoMapperProfiles));
+
+    // Dependency Injection for Repositories and Services
+    services.AddScoped<IHotelRepository, HotelRepository>();
+    services.AddScoped<HotelManagementService>();
+    services.AddScoped<ContactService>();
+
+    // RabbitMQ Configuration
+    services.AddSingleton<IConnection>(sp =>
+    {
+        try
+        {
+            var factory = new ConnectionFactory
+            {
+                Uri = new Uri(configuration.GetConnectionString("RabbitMQConnection")),
+                DispatchConsumersAsync = true
+            };
+            return factory.CreateConnection();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"RabbitMQ connection error: {ex.Message}");
+            throw;
+        }
+    });
+
+    // RabbitMQ Publisher
+    services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
+
+    // Controllers
+    services.AddControllers();
+}
+
+void ConfigureMiddleware(WebApplication app)
+{
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+    // Routing Middleware
+    app.UseRouting();
+
+    // Controller Endpoint Mapping
+    app.MapControllers();
+}
