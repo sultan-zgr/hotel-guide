@@ -125,6 +125,9 @@ dotnet ef database update
 - **POST** `/api/hotels`  
   Yeni otel ekle.
 
+- **GET** `/api/hotels/bulk`  
+  Toplu otel ekle.
+
 - **PUT** `/api/hotels/{id}`  
   Mevcut oteli güncelle.
 
@@ -134,8 +137,6 @@ dotnet ef database update
 - **GET** `/api/hotels/{id}`  
   Belirli bir otel bilgisi getir.
 
-- **POST** `/api/hotels/bulk`
-  Birden fazla otel ekle.
 
 ---
 
