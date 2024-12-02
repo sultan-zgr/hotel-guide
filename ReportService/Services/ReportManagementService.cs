@@ -22,15 +22,13 @@ public class ReportManagementService
 
     public async Task QueueReportRequest(CreateReportRequestDTO reportRequestDTO)
     {
-        // 1. Raporu "Preparing" durumu ile kaydet
         var report = _mapper.Map<Report>(reportRequestDTO);
-        report.Status = "Preparing"; // Varsayılan durum
+        report.Status = "Preparing"; 
         report.RequestedAt = DateTime.UtcNow;
 
         _context.Reports.Add(report);
         await _context.SaveChangesAsync();
 
-        // 2. RabbitMQ kuyruğuna mesaj gönder
         var channel = _connection.CreateModel();
         channel.QueueDeclare(queue: "report-queue", durable: true, exclusive: false, autoDelete: false);
 

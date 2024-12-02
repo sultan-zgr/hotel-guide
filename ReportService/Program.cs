@@ -10,21 +10,17 @@ using shared.Messaging.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog Configuration
+
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console() // Konsol loglama
-    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day) // Günlük dosya loglama
+    .WriteTo.Console() 
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day) 
     .CreateLogger();
 
-builder.Host.UseSerilog(); // Serilog'u entegre et
+builder.Host.UseSerilog(); 
 
-// Add services to the container
-
-// Database Context
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// RabbitMQ Connection
 builder.Services.AddSingleton<IConnection>(sp =>
 {
     var rabbitMqConnection = builder.Configuration["RabbitMQ:Connection"];
@@ -37,7 +33,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
     var factory = new ConnectionFactory
     {
         Uri = new Uri(rabbitMqConnection),
-        DispatchConsumersAsync = true // Asynchronous consumers
+        DispatchConsumersAsync = true 
     };
 
     try
@@ -53,44 +49,36 @@ builder.Services.AddSingleton<IConnection>(sp =>
     }
 });
 
-// Add RabbitMQSubscriber
 builder.Services.AddSingleton<IRabbitMQSubscriber, RabbitMQSubscriber>();
 
-// Add RabbitMQPublisher
 builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
 
-// Hosted Worker Service
 builder.Services.AddHostedService<Worker>();
 
-// AutoMapper Configuration
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
-// FluentValidation Configuration
 builder.Services.AddControllers()
     .AddFluentValidation(fv =>
     {
         fv.RegisterValidatorsFromAssemblyContaining<CreateReportRequestDTOValidator>();
     });
 
-// Dependency Injection for Services
 builder.Services.AddScoped<ReportManagementService>();
 builder.Services.AddSingleton<HotelEventListener>();
 
-// Add Swagger and Controllers
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Start HotelEventListener (RabbitMQ Listener for Hotel Events)
 using (var scope = app.Services.CreateScope())
 {
     var hotelEventListener = scope.ServiceProvider.GetRequiredService<HotelEventListener>();
@@ -109,7 +97,6 @@ using (var scope = app.Services.CreateScope())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-// Middleware for Logging Requests and Responses
 app.Use(async (context, next) =>
 {
     Log.Information("Handling request: {Method} {Path}", context.Request.Method, context.Request.Path);

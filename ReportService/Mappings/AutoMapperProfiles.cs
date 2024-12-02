@@ -9,7 +9,6 @@ namespace ReportService.Mappings
     {
         public AutoMapperProfiles()
         {
-            // Rapor -> DTO
             CreateMap<Report, ReportDTO>().ReverseMap();
             CreateMap<CreateReportRequestDTO, Report>();
             CreateMap<Report, ReportListDTO>();
@@ -17,8 +16,6 @@ namespace ReportService.Mappings
             CreateMap<HotelUpdatedEvent, Hotel>().ReverseMap();
             CreateMap<HotelDeletedEvent, Hotel>().ReverseMap();
 
-
-            //Rapor->ReportRequestEvent
             CreateMap<Report, ReportRequestEvent>()
                 .ForMember(dest => dest.ReportId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))

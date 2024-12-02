@@ -36,12 +36,7 @@ public class Worker : BackgroundService
             var report = await dbContext.Reports.FindAsync(reportId);
             if (report != null)
             {
-                // Raporu işleme
-                report.HotelCount = dbContext.Hotels.Count(h => h.Location == location);
-                //report.ContactCount = dbContext.Hotels
-                //    .Where(h => h.Location == location)
-                //    .SelectMany(h => h.Contacts)
-                //    .Count();
+                report.HotelCount = dbContext.Hotels.Count(h => h.Location == location);  
                 report.Status = "Completed";
 
                 dbContext.Reports.Update(report);

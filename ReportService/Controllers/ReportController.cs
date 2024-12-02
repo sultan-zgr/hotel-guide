@@ -20,7 +20,6 @@ public class ReportController : ControllerBase
         _createReportRequestValidator = createReportRequestValidator;
     }
 
-    // 1. Rapor Talebi Oluştur
     [HttpPost]
     public async Task<IActionResult> CreateReportRequest([FromBody] CreateReportRequestDTO reportRequestDTO)
     {
@@ -49,7 +48,6 @@ public class ReportController : ControllerBase
         }
     }
 
-    // 2. Rapor ID'ye Göre Getir
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetReportById(Guid id)
     {
@@ -74,7 +72,6 @@ public class ReportController : ControllerBase
         }
     }
 
-    // 3. Tüm Raporları Listele
     [HttpGet]
     public async Task<IActionResult> GetAllReports()
     {

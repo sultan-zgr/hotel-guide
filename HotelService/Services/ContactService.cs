@@ -16,7 +16,6 @@ namespace HotelService.Services
             _mapper = mapper;
         }
 
-        // 1. İletişim Bilgisi Ekleme
         public async Task AddContact(Guid hotelId, CreateContactDTO contactDTO)
         {
             var hotel = await _context.Hotels.FindAsync(hotelId);
@@ -28,7 +27,6 @@ namespace HotelService.Services
             await _context.SaveChangesAsync();
         }
 
-        // 2. İletişim Bilgisi Silme
         public async Task DeleteContact(Guid contactId)
         {
             var contact = await _context.Contacts.FindAsync(contactId);

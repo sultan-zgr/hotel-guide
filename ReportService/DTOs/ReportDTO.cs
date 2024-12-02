@@ -6,7 +6,7 @@
         public string Location { get; set; }
         public int HotelCount { get; set; }
         public int ContactCount { get; set; }
-        public string Status { get; set; } // Example: Preparing, Completed
+        public string Status { get; set; } 
         public DateTime RequestedAt { get; set; }
     }
 

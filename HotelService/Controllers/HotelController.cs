@@ -25,7 +25,6 @@ namespace HotelService.Controllers
             _updateHotelValidator = updateHotelValidator;
         }
 
-        // 1. Otelleri Listele
         [HttpGet]
         public async Task<IActionResult> GetAllHotels()
         {
@@ -34,7 +33,6 @@ namespace HotelService.Controllers
             return Ok(new { Message = "Hotels retrieved successfully.", Data = hotels });
         }
 
-        // 2. Yeni Otel Ekle
         [HttpPost]
         public async Task<IActionResult> AddHotel([FromBody] CreateHotelDTO hotelDTO)
         {
@@ -63,7 +61,6 @@ namespace HotelService.Controllers
             }
         }
 
-        // 3. Otel Güncelle
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateHotel(Guid id, [FromBody] UpdateHotelDTO hotelDTO)
         {
@@ -92,7 +89,6 @@ namespace HotelService.Controllers
             }
         }
 
-        // 4. Otel Sil
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteHotel(Guid id)
         {
@@ -109,7 +105,6 @@ namespace HotelService.Controllers
             }
         }
 
-        // 5. Toplu Otel Ekle
         [HttpPost("bulk")]
         public async Task<IActionResult> AddHotelsBulk([FromBody] List<CreateHotelDTO> hotelsDTO)
         {
@@ -140,7 +135,6 @@ namespace HotelService.Controllers
             }
         }
 
-        // 6. Otel ID'sine Göre Getir
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetHotelById(Guid id)
         {
