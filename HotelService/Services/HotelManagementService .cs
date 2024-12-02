@@ -76,4 +76,14 @@ public class HotelManagementService
             _publisher.PublishHotelAddedEvent(hotelAddedEvent);
         }
     }
+    // 6. Otel ID'sine Göre Getirme
+    public async Task<HotelDTO> GetHotelById(Guid id)
+    {
+        var hotel = await _hotelRepository.GetHotelByIdAsync(id);
+        if (hotel == null)
+            throw new Exception("Hotel not found");
+
+        return _mapper.Map<HotelDTO>(hotel);
+    }
+
 }
