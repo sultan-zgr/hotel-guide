@@ -134,7 +134,7 @@ dotnet ef database update
 - **GET** `/api/hotels/{id}`  
   Belirli bir otel bilgisi getir.
 
-- **POST** /api/hotels/bulk
+- **POST** `/api/hotels/bulk`
   Birden fazla otel ekle.
 
 ---
