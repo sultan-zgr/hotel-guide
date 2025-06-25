@@ -7,6 +7,7 @@
         public string Value { get; set; }
         public Guid HotelId { get; set; }
         public Hotel Hotel { get; set; } //test
+        //test2
     }
 
 }
