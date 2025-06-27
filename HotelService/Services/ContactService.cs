@@ -35,6 +35,9 @@ namespace HotelService.Services
             _context.Contacts.Remove(contact);
             await _context.SaveChangesAsync();
         }
+
+
+        //servis comment 
     }
 
 }
